@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<meta name="description" content="ELFAR Academy - اتعلم الماركتنج من الصفر للاحتراف. كورسات مجانية + شهادات معتمدة">
+<title>ELFAR Academy | اتعلم الماركتنج من الصفر - مجاناً</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+    --primary: #38bdf8;
+    --accent: #f59e0b;
+    --dark: #020617;
+    --dark-blue: #0f172a;
+    --mid-blue: #1e293b;
+    --text: #ffffff;
+    --card-bg: linear-gradient(145deg, #020617, #1e293b);
+    --glow: 0 0 20px rgba(56, 189, 248, 0.5);
+    --nav-bg: rgba(2, 6, 23, 0.8);
+}
+
+[data-theme="light"] {
+    --primary: #0284c7;
+    --accent: #d97706;
+    --dark: #f8fafc;
+    --dark-blue: #ffffff;
+    --mid-blue: #f1f5f9;
+    --text: #0f172a;
+    --card-bg: linear-gradient(145deg, #ffffff, #f1f5f9);
+    --glow: 0 0 20px rgba(2, 132, 199, 0.2);
+    --nav-bg: rgba(255, 255, 255, 0.9);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+    font-family: 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    background: var(--dark-blue);
+    color: var(--text);
+    overflow-x: hidden;
+    transition: background 0.4s ease, color 0.4s ease;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+}
+
+body:not(.logged-in) #mainContent { display: none !important; }
+body.logged-in #welcomeScreen { display: none !important; }
+
+.visit-counter {
+    position: fixed;
+    top: 80px;
+    left: 10px;
+    background: var(--card-bg);
+    padding: 10px 16px;
+    border-radius: 12px;
+    border: 2px solid var(--primary);
+    z-index: 50;
+    box-shadow: var(--glow);
+    font-weight: 700;
+    font-size: 13px;
+}
+.visit-counter span { color: var(--accent); font-size: 16px; }
+
+#welcomeScreen {
+    position: fixed; inset: 0;
+    background: linear-gradient(135deg, var(--dark), var(--mid-blue));
+    z-index: 5000; display: flex; align-items: center; justify-content: center;
+    padding: 15px; overflow-y: auto;
+}
+.welcome-bg { position: absolute; inset: 0; overflow: hidden; }
+.welcome-bg-text {
+    position: absolute; font-size: clamp(40px, 8vw, 100px); font-weight: 700; opacity: 0.03;
+    white-space: nowrap; animation: float-text 25s linear infinite; color: var(--primary);
+}
+.welcome-bg-text:nth-child(1) { top: 5%; animation-delay: 0s; }
+.welcome-bg-text:nth-child(2) { top: 25%; animation-delay: 6s; }
+.welcome-bg-text:nth-child(3) { top: 45%; animation-delay: 12s; }
+.welcome-bg-text:nth-child(4) { top: 65%; animation-delay: 18s; }
+.welcome-bg-text:nth-child(5) { top: 85%; animation-delay: 24s; }
+@keyframes float-text { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+.welcome-content {
+    position: relative; z-index: 1; background: var(--nav-bg); backdrop-filter: blur(15px);
+    padding: 30px 20px; border-radius: 20px; max-width: 500px; width: 100%;
+    border: 2px solid var(--primary); box-shadow: 0 20px 60px rgba(56, 189, 248, 0.3);
+    animation: slideUp 0.6s ease; margin: 20px 0;
+}
+.welcome-content h1 { font-size: clamp(28px, 6vw, 42px); color: var(--primary); text-align: center; margin-bottom: 8px; text-shadow: var(--glow); }
+.welcome-content h1 span { color: var(--accent); }
+.welcome-content p { text-align: center; opacity: 0.9; margin-bottom: 25px; font-size: clamp(14px, 3vw, 18px); }
+.welcome-tabs { display: flex; gap: 8px; margin-bottom: 25px; border-bottom: 2px solid rgba(56, 189, 248, 0.2); }
+.welcome-tab {
+    flex: 1; padding: 10px 5px; background: none; border: none; color: var(--text);
+    font-weight: 600; cursor: pointer; transition: all 0.3s ease; border-bottom: 3px solid transparent;
+    font-family: inherit; font-size: clamp(14px, 3vw, 16px);
+}
+.welcome-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+.welcome-form { display: none; }
+.welcome-form.active { display: block; animation: fadeIn 0.4s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+#loader { position: fixed; inset: 0; background: var(--dark); z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.6s ease, visibility 0.6s; }
+#loader.hide { opacity: 0; visibility: hidden; }
+.loader-text { font-size: clamp(24px, 6vw, 40px); font-weight: 700; color: var(--primary); text-shadow: var(--glow); animation: pulse-loader 1.5s ease-in-out infinite; }
+@keyframes pulse-loader { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.98); } }
+
+nav { display: flex; justify-content: space-between; align-items: center; padding: 12px 4%; background: var(--nav-bg); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(56, 189, 248, 0.1); transition: all 0.3s ease; }
+nav.scrolled { padding: 10px 4%; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
+.logo { font-size: clamp(20px, 5vw, 28px); font-weight: 700; color: var(--primary); text-shadow: var(--glow); transition: transform 0.3s ease; }
+.logo span { color: var(--accent); }
+.logo:hover { transform: scale(1.05); }
+.nav-links { display: flex; align-items: center; gap: 15px; }
+.nav-links a { color: var(--text); text-decoration: none; font-weight: 500; transition: color 0.3s ease; position: relative; font-size: clamp(14px, 2.5vw, 16px); }
+.nav-links a::after { content: ''; position: absolute; bottom: -5px; right: 0; width: 0; height: 2px; background: var(--primary); transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.nav-links a:hover { color: var(--primary); }
+.nav-links a:hover::after { width: 100%; }
+.nav-btns { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.user-name { color: var(--primary); font-weight: 600; margin-left: 5px; font-size: clamp(12px, 2.5vw, 14px); }
+.logout-btn, .admin-btn { padding: 6px 14px; background: transparent; border: 2px solid var(--accent); color: var(--accent); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; font-family: inherit; font-size: clamp(12px, 2.5vw, 14px); }
+.logout-btn:hover, .admin-btn:hover { background: var(--accent); color: var(--dark-blue); }
+.theme-toggle { background: var(--mid-blue); border: 2px solid var(--primary); width: 46px; height: 24px; border-radius: 20px; cursor: pointer; position: relative; }
+.theme-toggle::before { content: '🌙'; position: absolute; width: 18px; height: 18px; top: 1px; right: 2px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; justify-content: center; font-size: 11px; }
+[data-theme="light"] .theme-toggle::before { content: '☀️'; right: 24px; }
+.menu-btn { display: none; background: none; border: none; color: var(--text); font-size: 26px; cursor: pointer; padding: 5px; }
+
+.hero { min-height: 90vh; display: flex; justify-content: center; align-items: center; flex-direction: column; text-align: center; background: radial-gradient(circle at center, var(--mid-blue), var(--dark)); padding: 20px 15px; position: relative; overflow: hidden; }
+.hero::before { content: ''; position: absolute; width: 400px; height: 400px; background: radial-gradient(circle, rgba(56, 189, 248, 0.12), transparent); border-radius: 50%; animation: float-glow 10s ease-in-out infinite; }
+@keyframes float-glow { 0%, 100% { transform: translate(-50px, 0) scale(1); } 50% { transform: translate(50px, -30px) scale(1.2); } }
+.hero h1 { font-size: clamp(28px, 7vw, 68px); color: var(--primary); text-shadow: var(--glow); margin-bottom: 16px; position: relative; z-index: 1; animation: slideUp 0.8s ease; padding: 0 10px; }
+.hero h1 span { color: var(--accent); }
+.hero p { font-size: clamp(16px, 3.5vw, 22px); opacity: 0.9; margin-bottom: 30px; max-width: 600px; position: relative; z-index: 1; animation: slideUp 0.8s ease 0.2s backwards; padding: 0 15px; }
+
+.btn { padding: 12px 28px; background: var(--primary); border: none; color: var(--dark-blue); border-radius: 12px; cursor: pointer; font-size: clamp(16px, 3.5vw, 18px); font-weight: 700; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 20px rgba(56, 189, 248, 0.3); text-decoration: none; display: inline-block; position: relative; z-index: 1; min-height: 44px; }
+.btn-secondary { background: var(--accent); box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3); }
+.btn:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(56, 189, 248, 0.5); }
+.btn-secondary:hover { box-shadow: 0 8px 30px rgba(245, 158, 11, 0.5); }
+.btn-small { padding: 8px 16px; font-size: clamp(14px, 3vw, 16px); margin-top: 12px; min-height: 40px; }
+.hero-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+.stats { padding: 50px 4%; background: var(--dark); }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 25px; max-width: 1000px; margin: 0 auto; }
+.stat-item { text-align: center; padding: 15px; }
+.stat-number { font-size: clamp(36px, 8vw, 48px); font-weight: 700; color: var(--primary); text-shadow: var(--glow); }
+.stat-label { font-size: clamp(14px, 3vw, 18px); opacity: 0.8; margin-top: 8px; }
+
+.services,.portfolio { padding: 60px 4%; text-align: center; }
+.services h2,.portfolio h2 { font-size: clamp(28px, 6vw, 42px); margin-bottom: 15px; color: var(--primary); }
+.services p,.portfolio p { font-size: clamp(15px, 3vw, 18px); opacity: 0.8; margin-bottom: 40px; padding: 0 15px; }
+
+.timeline { max-width: 900px; margin: 50px auto 0; position: relative; }
+.timeline::before { content: ''; position: absolute; right: 50%; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, var(--primary), var(--accent)); transform: translateX(50%); }
+.timeline-item { display: flex; margin-bottom: 40px; position: relative; }
+.timeline-item:nth-child(odd) { flex-direction: row-reverse; }
+.timeline-content { background: var(--card-bg); padding: 20px; border-radius: 18px; border: 1px solid rgba(56, 189, 248, 0.1); width: calc(50% - 30px); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.timeline-content:hover { transform: scale(1.03); border-color: var(--primary); box-shadow: 0 15px 40px rgba(56, 189, 248, 0.2); }
+.timeline-level { display: inline-block; background: #10b981; color: white; padding: 4px 12px; border-radius: 18px; font-weight: 700; margin-bottom: 8px; font-size: clamp(12px, 2.5vw, 14px); }
+.timeline-content h3 { color: var(--primary); margin-bottom: 8px; font-size: clamp(18px, 4vw, 22px); }
+.timeline-dot { position: absolute; right: 50%; top: 18px; width: 18px; height: 18px; background: var(--accent); border: 3px solid var(--dark); border-radius: 50%; transform: translateX(50%); z-index: 1; box-shadow: 0 0 20px var(--accent); }
+.price-old { text-decoration: line-through; opacity: 0.5; font-size: clamp(16px, 3.5vw, 20px); margin-left: 8px; }
+
+.course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; max-width: 1200px; margin: 0 auto; }
+.course-card { background: var(--card-bg); border-radius: 18px; overflow: hidden; border: 1px solid rgba(56, 189, 248, 0.1); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+.course-card:hover { transform: translateY(-10px); box-shadow: 0 20px 50px rgba(56, 189, 248, 0.25); }
+.course-img { width: 100%; height: 180px; background: linear-gradient(135deg, var(--primary), var(--accent)); display: flex; align-items: center; justify-content: center; font-size: 50px; }
+.course-content { padding: 20px; text-align: right; }
+.course-badge { display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; margin-bottom: 8px; }
+.badge-free { background: #10b981; color: white; }
+.course-content h3 { color: var(--primary); margin-bottom: 8px; font-size: clamp(18px, 4vw, 22px); }
+.course-meta { display: flex; gap: 12px; margin: 12px 0; font-size: clamp(12px, 2.5vw, 14px); opacity: 0.7; flex-wrap: wrap; }
+
+.filter-btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; padding: 0 10px; }
+.filter-btn { padding: 8px 16px; background: var(--mid-blue); border: 2px solid rgba(56, 189, 248, 0.2); color: var(--text); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; font-size: clamp(13px, 2.5vw, 15px); min-height: 40px; }
+.filter-btn.active,.filter-btn:hover { background: var(--primary); color: var(--dark-blue); border-color: var(--primary); }
+
+.lessons { padding: 60px 4%; background: var(--dark); text-align: center; }
+.lessons h2 { font-size: clamp(28px, 6vw, 42px); margin-bottom: 40px; color: var(--primary); }
+.lesson-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto; }
+.lesson-card { background: var(--card-bg); padding: 25px; border-radius: 18px; border: 1px solid rgba(56, 189, 248, 0.1); transition: all 0.4s ease; cursor: pointer; }
+.lesson-card:hover { transform: translateY(-6px); border-color: var(--primary); box-shadow: 0 15px 40px rgba(56, 189, 248, 0.2); }
+.lesson-icon { font-size: 40px; margin-bottom: 12px; }
+.lesson-card h3 { color: var(--primary); margin-bottom: 8px; font-size: clamp(16px, 3.5vw, 18px); }
+
+.modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95); z-index: 2000; align-items: center; justify-content: center; padding: 15px; }
+.modal.active { display: flex; }
+.modal-content { background: var(--dark-blue); padding: 25px; border-radius: 18px; max-width: 900px; width: 100%; position: relative; border: 1px solid var(--primary); animation: modalSlide 0.4s ease; max-height: 90vh; overflow-y: auto; }
+.modal-content.video-modal { max-width: 1000px; padding: 15px; }
+.modal-content.course-modal { max-width: 1100px; padding: 0; }
+@keyframes modalSlide { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+.modal-close { position: absolute; top: 12px; left: 12px; font-size: 28px; cursor: pointer; color: var(--text); transition: transform 0.3s ease; z-index: 10; background: var(--dark); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.modal-close:hover { transform: rotate(90deg); color: var(--primary); }
+
+.video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; margin-top: 15px; }
+.video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+
+.course-page { padding: 20px; }
+.course-header { background: linear-gradient(135deg, var(--primary), var(--accent)); padding: 30px 20px; border-radius: 18px; margin-bottom: 25px; text-align: center; }
+.course-header h2 { font-size: clamp(24px, 5vw, 36px); color: var(--dark-blue); margin-bottom: 8px; }
+.course-progress { background: var(--mid-blue); height: 8px; border-radius: 10px; overflow: hidden; margin: 15px 0; }
+.course-progress-bar { background: var(--accent); height: 100%; transition: width 0.5s ease; }
+
+.lessons-list { display: grid; gap: 12px; }
+.lesson-item { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 2px solid rgba(56, 189, 248, 0.1); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.3s ease; }
+.lesson-item:hover { border-color: var(--primary); transform: translateX(-5px); }
+.lesson-item.completed { border-color: #10b981; }
+.lesson-item.locked { opacity: 0.5; cursor: not-allowed; }
+.lesson-info h4 { color: var(--primary); margin-bottom: 4px; font-size: clamp(14px, 3vw, 16px); }
+.lesson-duration { font-size: clamp(11px, 2.5vw, 14px); opacity: 0.7; }
+
+.quiz-container { background: var(--card-bg); padding: 25px; border-radius: 18px; margin-top: 25px; }
+.quiz-question { font-size: clamp(16px, 3.5vw, 20px); margin-bottom: 18px; color: var(--primary); }
+.quiz-options { display: grid; gap: 12px; }
+.quiz-option { background: var(--dark); padding: 12px; border-radius: 10px; border: 2px solid rgba(56, 189, 248, 0.2); cursor: pointer; transition: all 0.3s ease; font-size: clamp(14px, 3vw, 16px); }
+.quiz-option:hover { border-color: var(--primary); transform: translateX(-5px); }
+.quiz-option.selected { background: var(--primary); color: var(--dark-blue); }
+.quiz-option.correct { background: #10b981; border-color: #10b981; color: white; }
+.quiz-option.wrong { background: #ef4444; border-color: #ef4444; color: white; }
+
+.faq { padding: 60px 4%; text-align: center; }
+.faq h2 { font-size: clamp(28px, 6vw, 42px); margin-bottom: 40px; color: var(--primary); }
+.faq-list { max-width: 800px; margin: 0 auto; }
+.faq-item { background: var(--card-bg); border: 1px solid rgba(56, 189, 248, 0.1); border-radius: 12px; margin-bottom: 12px; overflow: hidden; transition: all 0.3s ease; }
+.faq-question { padding: 18px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: clamp(15px, 3.5vw, 18px); }
+.faq-question:hover { color: var(--primary); }
+.faq-icon { font-size: 22px; transition: transform 0.3s ease; }
+.faq-item.active .faq-icon { transform: rotate(45deg); }
+.faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s ease; padding: 0 20px; opacity: 0.8; font-size: clamp(14px, 3vw, 16px); }
+.faq-item.active .faq-answer { max-height: 300px; padding: 0 20px 18px; }
+
+.contact { padding: 60px 4%; text-align: center; background: var(--mid-blue); }
+.contact h2 { font-size: clamp(28px, 6vw, 42px); margin-bottom: 15px; color: var(--primary); }
+.contact-info { margin-bottom: 30px; font-size: clamp(16px, 3.5vw, 20px); }
+.contact-info a { color: var(--primary); text-decoration: none; font-weight: 700; }
+
+form { max-width: 500px; margin: 0 auto; }
+.input-group { margin-bottom: 18px; }
+input, textarea { width: 100%; padding: 12px 16px; background: var(--dark); border: 2px solid rgba(56, 189, 248, 0.2); border-radius: 10px; color: var(--text); font-size: clamp(14px, 3vw, 16px); font-family: inherit; transition: all 0.3s ease; }
+input:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1); }
+textarea { resize: vertical; min-height: 100px; }
+#formMessage { margin-top: 12px; font-weight: 600; height: 24px; transition: opacity 0.3s ease; font-size: clamp(13px, 2.5vw, 15px); }
+
+.whatsapp-btn { position: fixed; bottom: 20px; left: 20px; width: 55px; height: 55px; background: #25D366; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 4px 20px rgba(37, 211, 102, 0.5); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 99; text-decoration: none; animation: pulse 2.5s ease-in-out infinite; }
+.whatsapp-btn:hover { transform: scale(1.15); }
+@keyframes pulse { 0%, 100% { box-shadow: 0 4px 20px rgba(37, 211, 102, 0.5); } 50% { box-shadow: 0 4px 35px rgba(37, 211, 102, 0.8); } }
+
+footer { text-align: center; padding: 25px 15px; background: var(--dark); border-top: 1px solid rgba(56, 189, 248, 0.1); }
+footer a { color: var(--primary); text-decoration: none; }
+footer p { font-size: clamp(13px, 2.5vw, 15px); }
+
+#adminPanel { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 3000; overflow-y: auto; padding: 30px 15px; }
+#adminPanel.active { display: block; }
+.admin-content { max-width: 800px; margin: 0 auto; background: var(--dark-blue); padding: 30px 20px; border-radius: 18px; border: 2px solid var(--accent); }
+.admin-content h2 { color: var(--accent); margin-bottom: 25px; text-align: center; font-size: clamp(22px, 5vw, 28px); }
+.user-list { display: grid; gap: 12px; }
+.user-card { background: var(--card-bg); padding: 18px; border-radius: 12px; border: 1px solid rgba(56, 189, 248, 0.2); }
+.user-card h4 { color: var(--primary); margin-bottom: 8px; font-size: clamp(15px, 3.5vw, 18px); }
+.user-card p { font-size: clamp(13px, 2.5vw, 15px); }
+.level-toggle { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.level-btn { padding: 6px 12px; background: var(--mid-blue); border: 2px solid var(--primary); border-radius: 6px; cursor: pointer; font-size: clamp(12px, 2.5vw, 14px); }
+.level-btn.active { background: var(--primary); color: var(--dark-blue); }
+
+@media (max-width: 768px) {
+.menu-btn { display: block; }
+.nav-links { position: absolute; top: 100%; right: 0; background: var(--dark); flex-direction: column; width: 100%; padding: 15px; gap: 12px; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-bottom: 1px solid rgba(56, 189, 248, 0.1); z-index: 100; }
+.nav-links.active { transform: translateX(0); }
+.timeline::before { right: 15px; }
+.timeline-item,.timeline-item:nth-child(odd) { flex-direction: row; }
+.timeline-content { width: calc(100% - 50px); margin-right: 50px; padding: 18px; }
+.timeline-dot { right: 15px; width: 16px; height: 16px; }
+.course-grid,.lesson-grid { grid-template-columns: 1fr; }
+.hero-btns { flex-direction: column; width: 100%; max-width: 300px; }
+.modal-content.video-modal { padding: 10px; }
+.welcome-bg-text { font-size: 50px; }
+.welcome-content { padding: 25px 18px; }
+.visit-counter { top: 70px; left: 8px; font-size: 11px; padding: 7px 12px; }
+.visit-counter span { font-size: 14px; }
+}
+
+@media (max-width: 480px) {
+.nav-btns { gap: 5px; }
+.logout-btn, .admin-btn { padding: 5px 10px; font-size: 11px; }
+.theme-toggle { width: 42px; height: 22px; }
+.theme-toggle::before { width: 16px; height: 16px; font-size: 10px; }
+[data-theme="light"] .theme-toggle::before { right: 22px; }
+.timeline-content { padding: 15px; }
+.course-content { padding: 18px; }
+.modal-content { padding: 20px; }
+}
+
+@media (max-width: 360px) {
+.hero h1 { font-size: 24px; }
+.btn { padding: 10px 20px; font-size: 15px; }
+.course-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="visit-counter">
+    👥 الزوار: <span id="visitCount">0</span>
+</div>
+
+<div id="welcomeScreen">
+    <div class="welcome-bg">
+        <div class="welcome-bg-text">ELFAR ACADEMY</div>
+        <div class="welcome-bg-text">MARKETING COURSE</div>
+        <div class="welcome-bg-text">LEARN DIGITAL</div>
+        <div class="welcome-bg-text">GROW YOUR BUSINESS</div>
+        <div class="welcome-bg-text">SUCCESS STARTS HERE</div>
+    </div>
+    <div class="welcome-content">
+        <h1>ELFAR <span>Academy</span></h1>
+        <p>سجل بياناتك وابدأ رحلة التعلم الآن 🚀</p>
+
+        <div class="welcome-tabs">
+            <button class="welcome-tab active" data-tab="welcomeLogin">تسجيل دخول</button>
+            <button class="welcome-tab" data-tab="welcomeSignup">حساب جديد</button>
+        </div>
+
+        <form class="welcome-form active" id="welcomeLoginForm">
+            <div class="input-group">
+                <input type="email" id="loginEmail" placeholder="الإيميل" required autocomplete="email">
+            </div>
+            <div class="input-group">
+                <input type="password" id="loginPassword" placeholder="كلمة السر" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn" style="width: 100%;">دخول للأكاديمية</button>
+            <p style="text-align: center; margin-top: 15px; opacity: 0.7; font-size: 14px;">أول مرة؟ اعمل حساب جديد فوق 👆</p>
+        </form>
+
+        <form class="welcome-form" id="welcomeSignupForm">
+            <div class="input-group">
+                <input type="text" id="signupName" placeholder="الاسم بالكامل" required autocomplete="name">
+            </div>
+            <div class="input-group">
+                <input type="email" id="signupEmail" placeholder="الإيميل" required autocomplete="email">
+            </div>
+            <div class="input-group">
+                <input type="tel" id="signupPhone" placeholder="رقم الواتساب" required autocomplete="tel">
+            </div>
+            <div class="input-group">
+                <input type="password" id="signupPassword" placeholder="كلمة السر" required autocomplete="new-password" minlength="4">
+            </div>
+            <button type="submit" class="btn" style="width: 100%; font-size: 18px; padding: 14px;">✅ إنشاء حساب ودخول</button>
+        </form>
+    </div>
+</div>
+
+<div id="loader">
+    <div class="loader-text">ELFAR Academy</div>
+</div>
+
+<div id="mainContent">
+
+<nav id="navbar">
+    <div class="logo">ELFAR <span>Academy</span></div>
+    <div class="nav-links" id="navLinks">
+        <a href="#home">الرئيسية</a>
+        <a href="#roadmap">المسار</a>
+        <a href="#courses">الكورسات</a>
+        <a href="#lessons">دروس</a>
+        <a href="#faq">أسئلة</a>
+        <a href="#contact">تواصل</a>
+    </div>
+    <div class="nav-btns">
+        <span class="user-name" id="userNameDisplay"></span>
+        <button class="admin-btn" id="adminBtn" style="display:none;">لوحة الأدمن</button>
+        <button class="logout-btn" id="logoutBtn">تسجيل خروج</button>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"></button>
+    </div>
+    <button class="menu-btn" id="menuBtn">☰</button>
+</nav>
+
+<section class="hero" id="home">
+    <h1>اتعلم الماركتنج <span>من الصفر للاحتراف</span> 🚀</h1>
+    <p>مسار تعليمي كامل + شهادات معتمدة + متابعة مع خبراء</p>
+    <div class="hero-btns">
+        <a href="#roadmap" class="btn" id="heroBtn">ابدأ التعلم الآن</a>
+        <a href="https://wa.me/201070814732" class="btn btn-secondary" target="_blank">اسأل مستشار</a>
+    </div>
+</section>
+
+<section class="stats">
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="stat-number" data-target="5000">0</div>
+            <div class="stat-label">طالب سعيد</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" data-target="50">0</div>
+            <div class="stat-label">كورس احترافي</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" data-target="98">0</div>
+            <div class="stat-label">% نسبة الرضا</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" data-target="10">0</div>
+            <div class="stat-label">سنوات خبرة</div>
+        </div>
+    </div>
+</section>
+
+<section class="services" id="roadmap">
+    <h2>مسار التعلم - عروض محدودة 🔥</h2>
+    <p>5 مستويات هتاخدك من مبتدئ لمحترف ماركتنج</p>
+    <div class="timeline">
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <span class="timeline-level" style="background: #10b981;">المستوى 1 - عرض خاص</span>
+                <h3>أساسيات الماركتنج</h3>
+                <p>هتفهم يعني إيه تسويق، الفرق بينه وبين المبيعات، وتبدأ تفكر بعقلية المسوق</p>
+                <div style="font-size: 32px; color: #10b981; font-weight: 700; margin: 15px 0;">
+                    <span class="price-old">50 جنيه</span> مجاناً 🎁
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                    <button class="btn btn-small watch-video" data-video="https://www.youtube.com/embed/JwYX52BP2Sk">📹 شرح عربي</button>
+                    <button class="btn btn-small watch-video" data-video="https://www.youtube.com/embed/1XgNNs5FGBk">📹 English</button>
+                </div>
+                <button class="btn" style="width: 100%; margin-top: 15px; background: #10b981;" onclick="openCourse(1)">ابدأ مجاناً الآن</button>
+            </div>
+            <div class="timeline-dot"></div>
+        </div>
+
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <span class="timeline-level" style="background: var(--accent);">المستوى 2 - خصم 67%</span>
+                <h3>السوشيال ميديا</h3>
+                <p>إدارة فيسبوك، انستجرام، تيك توك. صناعة المحتوى والخطة الشهرية</p>
+                <div style="font-size: 32px; color: var(--accent); font-weight: 700; margin: 15px 0;">
+                    <span class="price-old">150 جنيه</span> 50 جنيه
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                    <button class="btn btn-small watch-video" data-video="https://www.youtube.com/embed/1333972518501632">📹 شرح عربي</button>
+                    <button class="btn btn-small watch-video" data-video="https://www.youtube.com/embed/tO_l7-b5w6Q">📹 English</button>
+                </div>
+                <button class="btn btn-locked" data-level="2" data-price="50" style="width: 100%; margin-top: 15px;">🔒 ادفع 50 جنيه وافتح الكورس</button>
+            </div>
+            <div class="timeline-dot"></div>
+        </div>
+
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <span class="timeline-level" style="background: var(--primary);">المستوى 3 - خصم 40%</span>
+                <h3>الإعلانات الممولة</h3>
+                <p>Facebook Ads, Google Ads. استهداف، ميزانية، تحليل النتائج ROAS</p>
+                <div style="font-size: 32px; color: var(--primary); font-weight: 700; margin: 15px 0;">
+                    <span class="price-old">250 جنيه</span> 150 جنيه
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                    <button class="btn btn-small watch-video" data-video="https://www.youtube.com/embed/1333972518501632">📹 شرح عربي</button>
+                    <button class="btn btn-small watch-video" data-video="https://www.youtube.com/embed/tO_l7-b5w6Q">📹 English</button>
+                </div>
+                <button class="btn btn-locked" data-level="2" data-price="50" style="width: 100%; margin-top: 15px;">🔒 ادفع 50 جنيه وافتح الكورس</button>
+            </div>
+            <div class="timeline-dot"></div>
+        </div>
+
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <span class="timeline-level" style="background: var(--primary);">المستوى 3 - خصم 40%</span>
+                <h3>الإعلانات الممولة</h3>
+                <p>Facebook Ads, Google Ads. استهداف، ميزانية، تحليل النتائج ROAS</p>
+                <div style="font-size: 32px; color: var(--primary); font-weight: 700; margin: 15px 0;">
+                    <span class="price-old">250 جنيه</span> 150 جنيه
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                    <button class="btn btn-small watch-video" data-video="https://www.youtube.com/embed/DS3MSnxiNF9">📹 شرح عربي</button>
+                    <button class="btn btn-small watch-video" data-video="https://www.youtube.com/embed/4R5lM-5wU8Q">📹 English</button>
+                </div>
+                <button class="btn btn-locked" data-level="3" data-price="150" style="width: 100%; margin-top: 15px;">🔒 ادفع 150 جنيه وافتح الكورس</button>
+            </div>
+            <div class="timeline-dot"></div>
+        </div>
+
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <span class="timeline-level" style="background: #8b5cf6;">المستوى 4 - خصم 50%</span>
+                <h3>SEO + Content Marketing</h3>
+                <p>تتصدر جوجل، كتابة مقالات، خطة محتوى تجيب عملاء من غير إعلانات</p>
+                <div style="font-size: 32px; color: #8b5cf6; font-weight: 700; margin: 15px 0;">
+                    <span class="price-old">500 جنيه</span> 250 جنيه
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                    <button class="btn btn-small watch-video" data-video="https://www.youtube.com/embed/C_V-PoMyqUw">📹 شرح عربي</button>
+                    <button class="btn btn-small watch-video" data-video="https://www.youtube.com/embed/hF515-0Tduk">📹 English</button>
+                </div>
+                <button class="btn btn-locked" data-level="4" data-price="250" style="width: 100%; margin-top: 15px;">🔒 ادفع 250 جنيه وافتح الكورس</button>
+            </div>
+            <div class="timeline-dot"></div>
+        </div>
+
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <span class="timeline-level" style="background: #ef4444;">المستوى 5 - خصم 33%</span>
+                <h3>استراتيجية + Funnels</h3>
+                <p>تبني خطة تسويقية كاملة، Sales Funnel، Email Marketing، وتبقى مدير تسويق</p>
+                <div style="font-size: 32px; color: #ef4444; font-weight: 700; margin: 15px 0;">
+                    <span class="price-old">750 جنيه</span> 500 جنيه
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                    <button class="btn btn-small watch-video" data-video="https://www.youtube.com/embed/758971667066270">📹 شرح عربي</button>
+                    <button class="btn btn-small watch-video" data-video="https://www.youtube.com/embed/9_7qHr1cHuM">📹 English</button>
+                </div>
+                <button class="btn btn-locked" data-level="5" data-price="500" style="width: 100%; margin-top: 15px;">🔒 ادفع 500 جنيه وافتح الكورس</button>
+            </div>
+            <div class="timeline-dot"></div>
+        </div>
+    </div>
+
+    <div style="background: var(--card-bg); padding: 30px; border-radius: 20px; max-width: 600px; margin: 60px auto 0; border: 1px solid var(--primary);">
+        <h3 style="color: var(--primary); margin-bottom: 20px; text-align: center;">💳 طرق الدفع المتاحة</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; text-align: center;">
+            <div style="padding: 15px; background: var(--dark); border-radius: 12px;">
+                <div style="font-size: 32px; margin-bottom: 10px;">📱</div>
+                <div style="font-weight: 700;">فودافون كاش</div>
+                <div style="color: var(--primary); font-size: 18px; margin-top: 5px;">01070814732</div>
+            </div>
+            <div style="padding: 15px; background: var(--dark); border-radius: 12px;">
+                <div style="font-size: 32px; margin-bottom: 10px;">💸</div>
+                <div style="font-weight: 700;">انستا باي</div>
+                <div style="color: var(--primary); font-size: 18px; margin-top: 5px;">01070814732</div>
+            </div>
+        <p style="text-align: center; margin-top: 20px; opacity: 0.8;">بعد التحويل ابعت سكرين شوت على الواتساب وهيتفعل الكورس فوراً ✅</p>
+        <p style="text-align: center; margin-top: 10px; color: var(--accent); font-weight: 600;">⚡ الكورس بيفتح تلقائي بعد تأكيد الدفع</p>
+    </div>
+</section>
+
+<section class="portfolio" id="courses">
+    <h2>كورسات احترافية</h2>
+    <p>كورسات متخصصة بشهادات معتمدة - عروض محدودة 🔥</p>
+
+    <div class="filter-btns">
+        <button class="filter-btn active" data-filter="all">الكل</button>
+        <button class="filter-btn" data-filter="free">مجاني</button>
+        <button class="filter-btn" data-filter="paid">مدفوع</button>
+        <button class="filter-btn" data-filter="ads">إعلانات</button>
+        <button class="filter-btn" data-filter="content">محتوى</button>
+    </div>
+
+    <div class="course-grid">
+        <div class="course-card" data-category="free" data-level="1">
+            <div class="course-img">🎯</div>
+            <div class="course-content">
+                <span class="course-badge badge-free">مجاني</span>
+                <h3>أساسيات الماركتنج - المستوى 1</h3>
+                <p>هتتعلم يعني إيه تسويق، الفرق بينه وبين المبيعات، وإزاي تفكر زي المسوق المحترف</p>
+                <div class="course-meta">
+                    <span>⏱️ 4 ساعات</span>
+                    <span>📚 12 درس</span>
+                    <span>⭐ 4.9</span>
+                </div>
+                <div style="font-size: 24px; color: #10b981; font-weight: 700; margin: 10px 0;">
+                    <span class="price-old" style="font-size: 18px;">50 جنيه</span> مجاناً 🎁
+                </div>
+                <button class="btn" style="width: 100%; background: #10b981;" onclick="openCourse(1)">ابدأ مجاناً</button>
+            </div>
+        </div>
+
+        <div class="course-card" data-category="paid" data-level="2">
+            <div class="course-img">📱</div>
+            <div class="course-content">
+                <span class="course-badge" style="background: var(--accent); color: white;">خصم 67%</span>
+                <h3>السوشيال ميديا - المستوى 2</h3>
+                <p>إدارة احترافية لفيسبوك، انستجرام، تيك توك. خطة محتوى شهرية كاملة</p>
+                <div class="course-meta">
+                    <span>⏱️ 6 ساعات</span>
+                    <span>📚 18 درس</span>
+                    <span>⭐ 4.8</span>
+                </div>
+                <div style="font-size: 24px; color: var(--accent); font-weight: 700; margin: 10px 0;">
+                    <span class="price-old">150 جنيه</span> 50 جنيه
+                </div>
+                <button class="btn btn-locked" data-level="2" data-price="50" style="width: 100%;">🔒 ادفع 50 جنيه وافتح الكورس</button>
+            </div>
+        </div>
+
+        <div class="course-card" data-category="paid ads" data-level="3">
+            <div class="course-img">💰</div>
+            <div class="course-content">
+                <span class="course-badge" style="background: var(--primary); color: white;">خصم 40%</span>
+                <h3>الإعلانات الممولة - المستوى 3</h3>
+                <p>Facebook Ads + Google Ads. استهداف صح، ميزانية ذكية، ROAS عالي</p>
+                <div class="course-meta">
+                    <span>⏱️ 8 ساعات</span>
+                    <span>📚 24 درس</span>
+                    <span>⭐ 4.9</span>
+                </div>
+                <div style="font-size: 24px; color: var(--primary); font-weight: 700; margin: 10px 0;">
+                    <span class="price-old">250 جنيه</span> 150 جنيه
+                </div>
+                <button class="btn btn-locked" data-level="3" data-price="150" style="width: 100%;">🔒 ادفع 150 جنيه وافتح الكورس</button>
+            </div>
+        </div>
+
+        <div class="course-card" data-category="paid content" data-level="4">
+            <div class="course-img">📝</div>
+            <div class="course-content">
+                <span class="course-badge" style="background: #8b5cf6; color: white;">خصم 50%</span>
+                <h3>SEO + Content - المستوى 4</h3>
+                <p>تتصدر جوجل، كتابة مقالات تجيب عملاء، خطة محتوى من غير إعلانات</p>
+                <div class="course-meta">
+                    <span>⏱️ 10 ساعات</span>
+                    <span>📚 30 درس</span>
+                    <span>⭐ 5.0</span>
+                </div>
+                <div style="font-size: 24px; color: #8b5cf6; font-weight: 700; margin: 10px 0;">
+                    <span class="price-old">500 جنيه</span> 250 جنيه
+                </div>
+                <button class="btn btn-locked" data-level="4" data-price="250" style="width: 100%;">🔒 ادفع 250 جنيه وافتح الكورس</button>
+            </div>
+        </div>
+
+        <div class="course-card" data-category="paid" data-level="5">
+            <div class="course-img">🎯</div>
+            <div class="course-content">
+                <span class="course-badge" style="background: #ef4444; color: white;">خصم 33%</span>
+                <h3>الاستراتيجية + Funnels - المستوى 5</h3>
+                <p>تبني خطة تسويقية كاملة، Sales Funnel، Email Marketing، وتبقى مدير تسويق</p>
+                <div class="course-meta">
+                    <span>⏱️ 12 ساعات</span>
+                    <span>📚 36 درس</span>
+                    <span>⭐ 5.0</span>
+                </div>
+                <div style="font-size: 24px; color: #ef4444; font-weight: 700; margin: 10px 0;">
+                    <span class="price-old">750 جنيه</span> 500 جنيه
+                </div>
+                <button class="btn btn-locked" data-level="5" data-price="500" style="width: 100%;">🔒 ادفع 500 جنيه وافتح الكورس</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="lessons" id="lessons">
+    <h2>دروس مجانية سريعة</h2>
+    <div class="lesson-grid">
+        <div class="lesson-card watch-video" data-video="https://www.youtube.com/embed/1XgNNs5FGBk">
+            <div class="lesson-icon">🎯</div>
+            <h3>يعني إيه ماركتنج؟</h3>
+            <p>شرح مبسط في 5 دقايق</p>
+        </div>
+        <div class="lesson-card watch-video" data-video="https://www.youtube.com/embed/M9s4iJj_-34">
+            <div class="lesson-icon">📱</div>
+            <h3>خطة محتوى 30 يوم</h3>
+            <p>ازاي تعمل خطة شهرية كاملة</p>
+        </div>
+        <div class="lesson-card watch-video" data-video="https://www.youtube.com/embed/FuCIXH9lV2U">
+            <div class="lesson-icon">💰</div>
+            <h3>أول إعلان ناجح</h3>
+            <p>خطوة بخطوة لحد ما الإعلان يشتغل</p>
+        </div>
+        <div class="lesson-card watch-video" data-video="https://www.youtube.com/embed/hF515-0Tduk">
+            <div class="lesson-icon">📝</div>
+            <h3>اكتب بوست يبيع</h3>
+            <p>صيغ جاهزة تزود التفاعل والمبيعات</p>
+        </div>
+    </div>
+</section>
+
+<section class="faq" id="faq">
+    <h2>أسئلة شائعة</h2>
+    <div class="faq-list">
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>الكورسات مجانية ولا مدفوعة؟</span>
+                <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+                المستوى الأول مجاني 100% بدل 50ج. المستوى 2 بـ 50ج بدل 150ج، المستوى 3 بـ 150ج بدل 250ج، المستوى 4 بـ 250ج بدل 500ج، المستوى 5 بـ 500ج بدل 750ج. تدفع مرة واحدة وتتعلم مدى الحياة.
+            </div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>ازاي ادفع وافتح الكورس؟</span>
+                <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+                دوس على الكورس اللي عايزه، هيفتح واتساب. حول الفلوس على فودافون كاش أو انستا باي 01070814732، ابعت السكرين، وهيتفعل الكورس تلقائي في حسابك فوراً.
+            </div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>هل الشهادة معتمدة؟</span>
+                <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+                أيوه، بعد ما تخلص كل مستويات الكورس وتعدي الاختبار، بتاخد شهادة PDF معتمدة من ELFAR Academy تقدر تحطها في الـ CV.
+            </div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>لو دفعت ومفهمتش حاجة؟</span>
+                <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+                عندك ضمان 14 يوم استرجاع كامل. + متابعة على الواتساب معايا شخصياً لو وقفت في أي حاجة.
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="contact" id="contact">
+    <h2>تواصل معانا</h2>
+    <div class="contact-info">
+        عندك سؤال؟ كلمنا واتساب: <a href="https://wa.me/201070814732" target="_blank">01070814732</a>
+    </div>
+    <form id="contactForm">
+        <div class="input-group">
+            <input type="text" id="name" placeholder="الاسم" required>
+        </div>
+        <div class="input-group">
+            <input type="email" id="email" placeholder="الإيميل" required>
+        </div>
+        <div class="input-group">
+            <textarea id="message" placeholder="رسالتك" required></textarea>
+        </div>
+        <button type="submit" class="btn" style="width: 100%;">ابعت الرسالة</button>
+        <div id="formMessage"></div>
+    </form>
+</section>
+
+<footer>
+    <p>© 2026 ELFAR Academy - جميع الحقوق محفوظة | <a href="#">سياسة الخصوصية</a></p>
+    <p style="margin-top: 10px; opacity: 0.7;">للدفع: فودافون كاش / انستا باي: 01070814732</p>
+</footer>
+
+<div class="modal" id="videoModal">
+    <div class="modal-content video-modal">
+        <span class="modal-close" id="closeVideoModal">×</span>
+        <div class="video-wrapper">
+            <iframe id="videoFrame" src="" allowfullscreen allow="autoplay"></iframe>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="courseModal">
+    <div class="modal-content course-modal">
+        <span class="modal-close" id="closeCourseModal">×</span>
+        <div class="course-page" id="coursePageContent"></div>
+    </div>
+</div>
+
+<div class="modal" id="accessModal">
+    <div class="modal-content" style="max-width: 500px; text-align: center;">
+        <span class="modal-close" id="closeAccessModal">×</span>
+        <div style="font-size: 60px; margin-bottom: 20px;">🔒</div>
+        <h2 style="color: var(--primary); margin-bottom: 15px;">الكورس مقفول</h2>
+        <p style="margin-bottom: 25px; opacity: 0.9;" id="accessText">لازم تدفع الأول عشان تفتح الكورس ده</p>
+        <div style="background: var(--dark); padding: 20px; border-radius: 12px; margin-bottom: 25px;">
+            <div style="font-weight: 700; margin-bottom: 10px;">حول على:</div>
+            <div style="font-size: 24px; color: var(--primary); margin-bottom: 10px;">فودافون كاش: 01070814732</div>
+            <div style="font-size: 24px; color: var(--primary);">انستا باي: 01070814732</div>
+        </div>
+        <a href="https://wa.me/201070814732" class="btn" style="width: 100%;" target="_blank" id="payBtn">💬 ابعت على الواتساب للتفعيل</a>
+    </div>
+</div>
+
+<div id="adminPanel">
+    <div class="admin-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h2>🔐 لوحة الأدمن - إدارة الكورسات</h2>
+            <button class="btn" onclick="document.getElementById('adminPanel').classList.remove('active')">✕ إغلاق</button>
+        </div>
+        <div class="user-list" id="userList"></div>
+    </div>
+</div>
+
+<a href="https://wa.me/201070814732" class="whatsapp-btn" target="_blank">💬</a>
+
+</div>
+
+<script>
+const coursesData = {
+    1: {
+        name: 'أساسيات الماركتنج',
+        lessons: [
+            { id: 1, title: 'مقدمة في التسويق', video: 'https://www.youtube.com/embed/1XgNNs5FGBk', duration: '15 دقيقة' },
+            { id: 2, title: 'الفرق بين التسويق والمبيعات', video: 'https://www.youtube.com/embed/JwYX52BP2Sk', duration: '20 دقيقة' },
+            { id: 3, title: 'عقلية المسوق المحترف', video: 'https://www.youtube.com/embed/M9s4iJj_-34', duration: '18 دقيقة' }
+        ],
+        quiz: [
+            { q: 'ما هو التسويق؟', options: ['بيع المنتجات', 'فهم احتياجات العميل', 'الإعلانات فقط', 'كل ما سبق'], correct: 1 },
+            { q: 'الفرق بين التسويق والمبيعات؟', options: ['لا فرق', 'التسويق قبل المبيعات', 'المبيعات قبل التسويق', 'نفس الشيء'], correct: 1 }
+        ]
+    },
+    2: {
+        name: 'السوشيال ميديا',
+        lessons: [
+            { id: 1, title: 'إدارة فيسبوك احترافية', video: 'https://www.youtube.com/embed/1333972518501632', duration: '25 دقيقة' },
+            { id: 2, title: 'استراتيجية انستجرام', video: 'https://www.youtube.com/embed/tO_l7-b5w6Q', duration: '22 دقيقة' },
+            { id: 3, title: 'خطة محتوى شهرية', video: 'https://www.youtube.com/embed/FuCIXH9lV2U', duration: '30 دقيقة' }
+        ],
+        quiz: [
+            { q: 'أفضل وقت للنشر على فيسبوك؟', options: ['الصباح', 'الظهر', 'المساء', 'يعتمد على الجمهور'], correct: 3 },
+            { q: 'ما هو الهاشتاج؟', options: ['كلمة عادية', 'وسيلة للوصول', 'زينة', 'لا فائدة منه'], correct: 1 }
+        ]
+    },
+    3: {
+        name: 'الإعلانات الممولة',
+        lessons: [
+            { id: 1, title: 'مقدمة في Facebook Ads', video: 'https://www.youtube.com/embed/DS3MSnxiNF9', duration: '28 دقيقة' },
+            { id: 2, title: 'الاستهداف الصحيح', video: 'https://www.youtube.com/embed/4R5lM-5wU8Q', duration: '25 دقيقة' },
+            { id: 3, title: 'تحليل ROAS', video: 'https://www.youtube.com/embed/hF515-0Tduk', duration: '20 دقيقة' }
+        ],
+        quiz: [
+            { q: 'ما هو ROAS؟', options: ['العائد على الإعلان', 'تكلفة الإعلان', 'عدد المشاهدات', 'لا شيء'], correct: 0 },
+            { q: 'أهم عنصر في الإعلان؟', options: ['الصورة', 'النص', 'الاستهداف', 'الميزانية'], correct: 2 }
+        ]
+    },
+    4: {
+        name: 'SEO + Content',
+        lessons: [
+            { id: 1, title: 'أساسيات SEO', video: 'https://www.youtube.com/embed/C_V-PoMyqUw', duration: '30 دقيقة' },
+            { id: 2, title: 'كتابة مقالات SEO', video: 'https://www.youtube.com/embed/hF515-0Tduk', duration: '25 دقيقة' },
+            { id: 3, title: 'خطة محتوى طويلة المدى', video: 'https://www.youtube.com/embed/9_7qHr1cHuM', duration: '28 دقيقة' }
+        ],
+        quiz: [
+            { q: 'ما هو SEO؟', options: ['تحسين محركات البحث', 'إعلان مدفوع', 'سوشيال ميديا', 'إيميل'], correct: 0 },
+            { q: 'أهم عامل في SEO؟', options: ['المحتوى', 'الباك لينك', 'السرعة', 'كل ما سبق'], correct: 3 }
+        ]
+    },
+    5: {
+        name: 'الاستراتيجية + Funnels',
+        lessons: [
+            { id: 1, title: 'بناء خطة تسويقية', video: 'https://www.youtube.com/embed/758971667066270', duration: '35 دقيقة' },
+            { id: 2, title: 'Sales Funnel احترافي', video: 'https://www.youtube.com/embed/9_7qHr1cHuM', duration: '30 دقيقة' },
+            { id: 3, title: 'Email Marketing', video: 'https://www.youtube.com/embed/4R5lM-5wU8Q', duration: '25 دقيقة' }
+        ],
+        quiz: [
+            { q: 'ما هو Sales Funnel؟', options: ['قمع المبيعات', 'إعلان', 'صفحة هبوط', 'لا شيء'], correct: 0 },
+            { q: 'أهم مرحلة في الفانل؟', options: ['الوعي', 'الاهتمام', 'القرار', 'كلهم مهمين'], correct: 3 }
+        ]
+    }
+};
+
+function updateVisitCounter() {
+    let visits = parseInt(localStorage.getItem('elfarVisits') || '0');
+    visits++;
+    localStorage.setItem('elfarVisits', visits);
+    document.getElementById('visitCount').textContent = visits.toLocaleString('ar-EG');
+}
+
+function checkLogin() {
+    const user = localStorage.getItem('elfarUser');
+    if (user) {
+        document.body.classList.add('logged-in');
+        const userData = JSON.parse(user);
+        document.getElementById('userNameDisplay').textContent = 'أهلاً ' + userData.name;
+        document.getElementById('welcomeScreen').style.display = 'none';
+        document.getElementById('loader').classList.add('hide');
+
+        if (userData.email === 'admin@elfar.com') {
+            document.getElementById('adminBtn').style.display = 'block';
+        }
+
+        updateCourseButtons();
+        updateVisitCounter();
+    } else {
+        document.body.classList.remove('logged-in');
+        document.getElementById('welcomeScreen').style.display = 'flex';
+    }
+}
+
+function updateCourseButtons() {
+    document.querySelectorAll('.btn-locked').forEach(btn => {
+        const level = btn.getAttribute('data-level');
+        if (checkAccess(level)) {
+            btn.innerHTML = '✅ مفتوح - ادخل الكورس';
+            btn.classList.remove('btn-locked');
+            btn.classList.add('btn-open');
+            btn.onclick = () => openCourse(level);
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    document.getElementById('welcomeSignupForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const userData = {
+            name: document.getElementById('signupName').value.trim(),
+            email: document.getElementById('signupEmail').value.trim(),
+            phone: document.getElementById('signupPhone').value.trim(),
+            password: document.getElementById('signupPassword').value,
+            paidLevels: ['1'],
+            completedLessons: {},
+            quizScores: {}
+        };
+
+        localStorage.setItem('elfarUser', JSON.stringify(userData));
+
+        let allUsers = JSON.parse(localStorage.getItem('allUsers') || '[]');
+        if (!allUsers.find(u => u.email === userData.email)) {
+            allUsers.push(userData);
+            localStorage.setItem('allUsers', JSON.stringify(allUsers));
+        }
+
+        alert('✅ تم إنشاء حسابك بنجاح! أهلاً بيك في ELFAR Academy');
+        checkLogin();
+    });
+
+    document.getElementById('welcomeLoginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+
+        const allUsers = JSON.parse(localStorage.getItem('allUsers') || '[]');
+        let userData = allUsers.find(u => u.email === email);
+
+        if (!userData) {
+            const user = localStorage.getItem('elfarUser');
+            if (user) {
+                const parsed = JSON.parse(user);
+                if (parsed.email === email) userData = parsed;
+            }
+        }
+
+        if (userData) {
+            if (userData.password === password) {
+                localStorage.setItem('elfarUser', JSON.stringify(userData));
+                alert('✅ مرحباً بعودتك ' + userData.name);
+                checkLogin();
+            } else {
+                alert('❌ كلمة السر غلط');
+            }
+        } else {
+            alert('❌ مفيش حساب بالإيميل ده. اعمل حساب جديد');
+        }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', function() {
+        if (confirm('متأكد عايز تسجل خروج؟')) {
+            localStorage.removeItem('elfarUser');
+            location.reload();
+        }
+    });
+
+    document.querySelectorAll('.welcome-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.welcome-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.welcome-form').forEach(f => f.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(tab.getAttribute('data-tab') + 'Form').classList.add('active');
+        });
+    });
+
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            document.getElementById('loader').classList.add('hide');
+            checkLogin();
+        }, 800);
+    });
+
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    body.setAttribute('data-theme', savedTheme);
+
+    themeToggle.addEventListener('click', function() {
+        const current = body.getAttribute('data-theme');
+        const next = current === 'dark'? 'light' : 'dark';
+        body.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+    });
+
+    const menuBtn = document.getElementById('menuBtn');
+    const navLinks = document.getElementById('navLinks');
+    menuBtn.addEventListener('click', function() {
+        navLinks.classList.toggle('active');
+    });
+
+    window.addEventListener('scroll', function() {
+        document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    const counters = document.querySelectorAll('.stat-number');
+    const speed = 200;
+    const animateCounter = function() {
+        counters.forEach(counter => {
+            const updateCount = function() {
+                const target = +counter.getAttribute('data-target');
+                const count = +counter.innerText;
+                const inc = target / speed;
+                if (count < target) {
+                    counter.innerText = Math.ceil(count + inc);
+                    setTimeout(updateCount, 15);
+                } else {
+                    counter.innerText = target;
+                }
+            };
+            updateCount();
+        });
+    };
+
+    const statsSection = document.querySelector('.stats');
+    let animated = false;
+    window.addEventListener('scroll', function() {
+        if (statsSection && window.scrollY > statsSection.offsetTop - 500 &&!animated) {
+            animateCounter();
+            animated = true;
+        }
+    });
+
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const courseCards = document.querySelectorAll('.course-card');
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const filter = btn.getAttribute('data-filter');
+            courseCards.forEach(card => {
+                if (filter === 'all' || card.getAttribute('data-category').includes(filter)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+
+    const videoModal = document.getElementById('videoModal');
+    const videoFrame = document.getElementById('videoFrame');
+    const closeVideoModal = document.getElementById('closeVideoModal');
+
+    document.querySelectorAll('.watch-video').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const videoUrl = btn.getAttribute('data-video');
+            videoFrame.src = videoUrl + '?autoplay=1&rel=0';
+            videoModal.classList.add('active');
+        });
+    });
+
+    closeVideoModal.addEventListener('click', function() {
+        videoModal.classList.remove('active');
+        videoFrame.src = '';
+    });
+
+    const accessModal = document.getElementById('accessModal');
+    const closeAccessModal = document.getElementById('closeAccessModal');
+    const payBtn = document.getElementById('payBtn');
+    const accessText = document.getElementById('accessText');
+
+    window.checkAccess = function(level) {
+        const user = localStorage.getItem('elfarUser');
+        if (!user) return false;
+        const userData = JSON.parse(user);
+        return userData.paidLevels && userData.paidLevels.includes(level.toString());
+    }
+
+    window.openCourse = function(level) {
+        if (!checkAccess(level)) {
+            alert('🔒 الكورس ده مقفول. لازم تدفع الأول');
+            return;
+        }
+
+        const course = coursesData[level];
+        if (!course) return;
+
+        const user = JSON.parse(localStorage.getItem('elfarUser'));
+        const completedLessons = user.completedLessons[level] || [];
+        const progress = (completedLessons.length / course.lessons.length) * 100;
+
+        let html = `
+            <div class="course-header">
+                <h2>${course.name} - المستوى ${level}</h2>
+                <p>تقدمك في الكورس: ${Math.round(progress)}%</p>
+                <div class="course-progress">
+                    <div class="course-progress-bar" style="width: ${progress}%"></div>
+                </div>
+            <div class="lessons-list">
+        `;
+
+        course.lessons.forEach((lesson, index) => {
+            const isCompleted = completedLessons.includes(lesson.id);
+            const isLocked = index > 0 &&!completedLessons.includes(course.lessons[index-1].id);
+            html += `
+                <div class="lesson-item ${isCompleted? 'completed' : ''} ${isLocked? 'locked' : ''}"
+                     onclick="${isLocked? '' : `playLesson(${level}, ${lesson.id})`}">
+                    <div class="lesson-info">
+                        <h4>${isCompleted? '✅ ' : ''}الدرس ${lesson.id}: ${lesson.title}</h4>
+                        <div class="lesson-duration">⏱️ ${lesson.duration}</div>
+                    </div>
+                    <div>${isLocked? '🔒' : isCompleted? '✅' : '▶️'}</div>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+
+        if (completedLessons.length === course.lessons.length) {
+            html += `
+                <div class="quiz-container">
+                    <h3 style="color: var(--primary); margin-bottom: 20px;">📝 اختبار المستوى ${level}</h3>
+                    <div id="quizContent"></div>
+                    <button class="btn" onclick="startQuiz(${level})" style="margin-top: 20px; width: 100%;">ابدأ الاختبار</button>
+                </div>
+            `;
+        }
+
+        document.getElementById('coursePageContent').innerHTML = html;
+        document.getElementById('courseModal').classList.add('active');
+    }
+
+    window.playLesson = function(level, lessonId) {
+        const course = coursesData[level];
+        const lesson = course.lessons.find(l => l.id === lessonId);
+        if (!lesson) return;
+
+        const user = JSON.parse(localStorage.getItem('elfarUser'));
+        if (!user.completedLessons[level]) user.completedLessons[level] = [];
+        if (!user.completedLessons[level].includes(lessonId)) {
+            user.completedLessons[level].push(lessonId);
+            localStorage.setItem('elfarUser', JSON.stringify(user));
+
+            let allUsers = JSON.parse(localStorage.getItem('allUsers') || '[]');
+            const userIndex = allUsers.findIndex(u => u.email === user.email);
+            if (userIndex!== -1) {
+                allUsers[userIndex] = user;
+                localStorage.setItem('allUsers', JSON.stringify(allUsers));
+            }
+        }
+
+        videoFrame.src = lesson.video + '?autoplay=1&rel=0';
+        videoModal.classList.add('active');
+
+        setTimeout(function() {
+            openCourse(level);
+        }, 500);
+    }
+
+    window.startQuiz = function(level) {
+        const course = coursesData[level];
+        const user = JSON.parse(localStorage.getItem('elfarUser'));
+
+        let currentQ = 0;
+        let score = 0;
+        const answers = [];
+
+        function showQuestion() {
+            if (currentQ >= course.quiz.length) {
+                finishQuiz();
+                return;
+            }
+
+            const q = course.quiz[currentQ];
+            let html = `
+                <div class="quiz-question">السؤال ${currentQ + 1} من ${course.quiz.length}: ${q.q}</div>
+                <div class="quiz-options">
+            `;
+
+            q.options.forEach((opt, idx) => {
+                html += `<div class="quiz-option" onclick="selectAnswer(${idx})">${opt}</div>`;
+            });
+
+            html += `</div>`;
+            document.getElementById('quizContent').innerHTML = html;
+        }
+
+        window.selectAnswer = function(idx) {
+            const q = course.quiz[currentQ];
+            const options = document.querySelectorAll('.quiz-option');
+            options.forEach((opt, i) => {
+                opt.onclick = null;
+                if (i === q.correct) opt.classList.add('correct');
+                else if (i === idx) opt.classList.add('wrong');
+            });
+
+            if (idx === q.correct) score++;
+            answers.push(idx);
+
+            setTimeout(function() {
+                currentQ++;
+                showQuestion();
+            }, 1500);
+        }
+
+        function finishQuiz() {
+            const percentage = Math.round((score / course.quiz.length) * 100);
+            const passed = percentage >= 70;
+
+            let html = `
+                <div style="text-align: center; padding: 30px;">
+                    <div style="font-size: 60px; margin-bottom: 20px;">${passed? '🎉' : '😔'}</div>
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">
+                        ${passed? 'مبروك! نجحت في الاختبار' : 'للأسف لم تنجح'}
+                    </h3>
+                    <div style="font-size: 48px; font-weight: 700; color: ${passed? '#10b981' : '#ef4444'}; margin: 20px 0;">
+                        ${percentage}%
+                    </div>
+                    <p style="opacity: 0.8; margin-bottom: 20px;">
+                        جاوبت صح على ${score} من ${course.quiz.length} أسئلة
+                    </p>
+            `;
+
+            if (passed) {
+                if (!user.quizScores) user.quizScores = {};
+                user.quizScores[level] = percentage;
+                localStorage.setItem('elfarUser', JSON.stringify(user));
+
+                let allUsers = JSON.parse(localStorage.getItem('allUsers') || '[]');
+                const userIndex = allUsers.findIndex(u => u.email === user.email);
+                if (userIndex!== -1) {
+                    allUsers[userIndex] = user;
+                    localStorage.setItem('allUsers', JSON.stringify(allUsers));
+                }
+
+                html += `
+                    <button class="btn" onclick="generateCertificate(${level})" style="width: 100%;">
+                        📜 تحميل الشهادة PDF
+                    </button>
+                `;
+            } else {
+                html += `
+                    <button class="btn" onclick="startQuiz(${level})" style="width: 100%;">
+                        🔄 إعادة الاختبار
+                    </button>
+                `;
+            }
+
+            html += `</div>`;
+            document.getElementById('quizContent').innerHTML = html;
+        }
+
+        showQuestion();
+    }
+
+    window.generateCertificate = function(level) {
+        const user = JSON.parse(localStorage.getItem('elfarUser'));
+        const course = coursesData[level];
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.setFillColor(2, 6, 23);
+        doc.rect(0, 0, 210, 297, 'F');
+
+        doc.setDrawColor(56, 189, 248);
+        doc.setLineWidth(2);
+        doc.rect(10, 10, 190, 277);
+
+        doc.setTextColor(56, 189, 248);
+        doc.setFontSize(40);
+        doc.text('ELFAR Academy', 105, 40, { align: 'center' });
+
+        doc.setFontSize(24);
+        doc.setTextColor(245, 158, 11);
+        doc.text('Certificate of Completion', 105, 55, { align: 'center' });
+
+        doc.setFontSize(18);
+        doc.setTextColor(255, 255);
+        doc.text('This certifies that', 105, 80, { align: 'center' });
+
+        doc.setFontSize(32);
+        doc.setTextColor(56, 189, 248);
+        doc.text(user.name, 105, 100, { align: 'center' });
+
+        doc.setFontSize(16);
+        doc.setTextColor(255, 255);
+        doc.text('has successfully completed', 105, 120, { align: 'center' });
+
+        doc.setFontSize(24);
+        doc.setTextColor(245, 158, 11);
+        doc.text(course.name + ' - Level ' + level, 105, 140, { align: 'center' });
+
+        const date = new Date().toLocaleDateString('ar-EG');
+        doc.setFontSize(14);
+        doc.setTextColor(255, 255, 255);
+        doc.text('Date: ' + date, 105, 180, { align: 'center' });
+
+        doc.text('Score: ' + user.quizScores[level] + '%', 105, 195, { align: 'center' });
+
+        doc.setFontSize(12);
+        doc.text('ELFAR Academy', 105, 250, { align: 'center' });
+        doc.setFontSize(10);
+        doc.text('www.elfaracademy.com', 105, 260, { align: 'center' });
+
+        doc.save(`ELFAR-Certificate-Level${level}-${user.name}.pdf`);
+    }
+
+    document.querySelectorAll('.btn-locked').forEach(btn => {
+        const level = btn.getAttribute('data-level');
+        const price = btn.getAttribute('data-price');
+
+        if (checkAccess(level)) {
+            btn.innerHTML = '✅ مفتوح - ادخل الكورس';
+            btn.classList.remove('btn-locked');
+            btn.classList.add('btn-open');
+            btn.onclick = () => openCourse(level);
+        } else {
+            btn.onclick = function() {
+                const levelNames = {
+                    '2': 'المستوى 2 - السوشيال ميديا',
+                    '3': 'المستوى 3 - الإعلانات الممولة',
+                    '4': 'المستوى 4 - SEO + Content',
+                    '5': 'المستوى 5 - الاستراتيجية'
+                };
+                accessText.textContent = `${levelNames[level]} - ${price} جنيه`;
+                payBtn.href = `https://wa.me/201070814732?text=عايز اشترك في ${levelNames[level]} بـ ${price} جنيه`;
+                accessModal.classList.add('active');
+            };
+        }
+    });
+
+    closeAccessModal.addEventListener('click', function() {
+        accessModal.classList.remove('active');
+    });
+
+    document.getElementById('adminBtn').addEventListener('click', function() {
+        const pass = prompt('ادخل كود الأدمن:');
+        if (pass === 'elfar2026') {
+            document.getElementById('adminPanel').classList.add('active');
+            loadAdminPanel();
+        } else {
+            alert('❌ كود غلط');
+        }
+    });
+
+    function loadAdminPanel() {
+        const allUsers = JSON.parse(localStorage.getItem('allUsers') || '[]');
+
+        let html = '';
+        allUsers.forEach((u, idx) => {
+            html += `
+                <div class="user-card">
+                    <h4>👤 ${u.name}</h4>
+                    <p>📧 ${u.email} | 📱 ${u.phone}</p>
+                    <div class="level-toggle">
+                        <strong>المستويات المفتوحة:</strong><br>
+                        ${[1,2,3,4,5].map(lvl => `
+                            <button class="level-btn ${u.paidLevels.includes(lvl.toString())? 'active' : ''}"
+                                    onclick="toggleLevel(${idx}, '${lvl}')">
+                                مستوى ${lvl}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        });
+
+        document.getElementById('userList').innerHTML = html || '<p style="text-align: center; opacity: 0.7;">مفيش مستخدمين لسه</p>';
+    }
+
+    window.toggleLevel = function(userIdx, level) {
+        const allUsers = JSON.parse(localStorage.getItem('allUsers') || '[]');
+        const user = allUsers[userIdx];
+
+        if (user.paidLevels.includes(level)) {
+            user.paidLevels = user.paidLevels.filter(l => l!== level);
+        } else {
+            user.paidLevels.push(level);
+        }
+
+        allUsers[userIdx] = user;
+        localStorage.setItem('allUsers', JSON.stringify(allUsers));
+
+        const currentUser = JSON.parse(localStorage.getItem('elfarUser'));
+        if (currentUser && currentUser.email === user.email) {
+            localStorage.setItem('elfarUser', JSON.stringify(user));
+        }
+
+        loadAdminPanel();
+        updateCourseButtons();
+    }
+
+    document.querySelectorAll('.faq-question').forEach(q => {
+        q.addEventListener('click', function() {
+            q.parentElement.classList.toggle('active');
+        });
+    });
+
+    document.getElementById('contactForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const msg = document.getElementById('formMessage');
+        msg.textContent = '✅ تم الإرسال بنجاح! هنتواصل معاك قريباً';
+        msg.style.color = '#10b981';
+        e.target.reset();
+        setTimeout(function() { msg.textContent = ''; }, 4000);
+    });
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                navLinks.classList.remove('active');
+            }
+        });
+    });
+
+    window.addEventListener('click', function(e) {
+        if (e.target === videoModal) {
+            videoModal.classList.remove('active');
+            videoFrame.src = '';
+        }
+        if (e.target === accessModal) {
+            accessModal.classList.remove('active');
+        }
+        if (e.target === document.getElementById('courseModal')) {
+            document.getElementById('courseModal').classList.remove('active');
+        }
+    });
+
+    document.getElementById('closeCourseModal').addEventListener('click', function() {
+        document.getElementById('courseModal').classList.remove('active');
+    });
+
+    checkLogin();
+    updateVisitCounter();
+
+});
+</script>
+
+</body>
+</html>
+                    
